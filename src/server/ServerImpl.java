@@ -6,12 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import server.ClimaAPIResponse; // Asegúrate de importar tu clase mapeadora
@@ -20,17 +15,14 @@ import common.InterfazDeServer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-
-
 public class ServerImpl implements InterfazDeServer {
 
     private final String API_KEY = "00699a1a425bce6e4a3daddf1b447487"; // <-- Reemplaza por tu clave
     private ArrayList<ClimaCiudad> historial = new ArrayList<>();
     private ArrayList<ClimaCiudad> bd_clima_copia = new ArrayList<>();
-
     
     public ServerImpl() throws RemoteException {
-    	ConectarBD();
+        ConectarBD();
         UnicastRemoteObject.exportObject(this, 0);        
     }
     
@@ -39,91 +31,102 @@ public class ServerImpl implements InterfazDeServer {
         String username = "root";
         String password_BD = "";
         PreparedStatement ps = null;
-        
 
         try{
-        	Connection con = DriverManager.getConnection(url, username, password_BD);
-        			
-             ps = con.prepareStatement(
-            	    "INSERT INTO clima_ciudad (ciudad, temperatura, humedad, descripcion, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)"
-            		);
-
-            		ps.setString(1, clima.getCiudad());
-            		ps.setDouble(2, clima.getTemperatura());
-            		ps.setInt(3, clima.getHumedad());
-            		ps.setString(4, clima.getDescripcion());
-            		ps.setString(5, clima.getFechaConsulta());
-            		ps.setString(6, clima.getHoraConsulta());
-
-            		ps.executeUpdate();
-
-            //con.close();
-                
+            Connection con = DriverManager.getConnection(url, username, password_BD);
+            ps = con.prepareStatement(
+                "INSERT INTO clima_ciudad (ciudad, temperatura, humedad, descripcion, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)"
+            );
+            ps.setString(1, clima.getCiudad());
+            ps.setDouble(2, clima.getTemperatura());
+            ps.setInt(3, clima.getHumedad());
+            ps.setString(4, clima.getDescripcion());
+            ps.setString(5, clima.getFechaConsulta());
+            ps.setString(6, clima.getHoraConsulta());
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("Error al guardar en la base de datos.");
         }
     }
     
-    public void ConectarBD( ) {
-    	String driver="com.mysql.jdbc.Driver";
-    	Connection connection= null;
-    	Statement query = null;
-    	//PreparedStatement test = null;
-    	ResultSet resultados = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-    	
-    	try {
-    		String url = "jdbc:mysql://localhost:3306/clima";
-    		String username = "root";
-    		String password_BD = "";
-    		
-    		connection = DriverManager.getConnection(url, username, password_BD);
-    		
-    		//todos los metodos
-    		query = connection.createStatement();
-    		String sql = "SELECT * FROM clima_ciudad";
-    		//Insert para agregar datos a la bd, PreparedStatemen
-    		
-    		
-    		resultados = query.executeQuery(sql);
-    		while(resultados.next()) {
-    			int id = resultados.getInt("id");
-    			String ciudad = resultados.getString("ciudad");
-    			double temperatura = resultados.getDouble("temperatura");
-    			int humedad = resultados.getInt("humedad");
-    			String descripcion = resultados.getString("descripcion");
-    			String fecha = resultados.getString("fecha");
-    			String hora = resultados.getString("hora");
-    			
-    			ClimaCiudad newClimaCiudad = new ClimaCiudad(ciudad, temperatura, humedad, descripcion, fecha, hora); 
+    public void ConectarBD() {
+        String driver = "com.mysql.cj.jdbc.Driver"; // Cambiado a el driver actualizado para MySQL
+        Connection connection = null;
+        Statement query = null;
+        ResultSet resultados = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-    			bd_clima_copia.add(newClimaCiudad);
-    			
-    			//System.out.println("ID: " + id + ", Ciudad: " + ciudad + ", Temp: " + temperatura + "°C, Humedad: " + humedad + "%, Descripción: " + descripcion + ", Fecha: " + fecha + ", Hora: " + hora);
-
-    	}
-    		
-    		
-    		//connection.close();
-    		} catch(SQLException e) {
-    		e.printStackTrace();
-    		System.out.println("No se pudo conectar a la base de datos");
-    		
-    		
-    	}
+        try {
+            // Verificamos si la base de datos 'clima' existe
+            String url = "jdbc:mysql://localhost:3306/";
+            String username = "root";
+            String password_BD = "";
+            
+            connection = DriverManager.getConnection(url, username, password_BD);
+            query = connection.createStatement();
+            
+            // Verificar si la base de datos 'clima' existe
+            rs = query.executeQuery("SHOW DATABASES LIKE 'clima'");
+            if (!rs.next()) {
+                System.out.println("Base de datos 'clima' no existe. Creando...");
+                query.executeUpdate("CREATE DATABASE clima");
+            }
+            
+            // Ahora nos conectamos a la base de datos 'clima'
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", username, password_BD);
+            query = connection.createStatement();
+            
+            // Verificar si la tabla 'clima_ciudad' existe
+            rs = query.executeQuery("SHOW TABLES LIKE 'clima_ciudad'");
+            if (!rs.next()) {
+                System.out.println("Tabla 'clima_ciudad' no existe. Creando...");
+                String createTableSQL = "CREATE TABLE clima_ciudad ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "ciudad VARCHAR(100), "
+                    + "temperatura DOUBLE, "
+                    + "humedad INT, "
+                    + "descripcion VARCHAR(255), "
+                    + "fecha DATE, "
+                    + "hora TIME)";
+                query.executeUpdate(createTableSQL);
+                System.out.println("Tabla 'clima_ciudad' creada exitosamente.");
+            }
+            
+	        // Verifica si la conexión fue exitosa
+            if (connection != null) {
+                System.out.println("Conexión a la base de datos 'clima' exitosa.");
+            }
+            
+            // Recuperar los datos existentes
+            String sql = "SELECT * FROM clima_ciudad";
+            resultados = query.executeQuery(sql);
+            while (resultados.next()) {
+                int id = resultados.getInt("id");
+                String ciudad = resultados.getString("ciudad");
+                double temperatura = resultados.getDouble("temperatura");
+                int humedad = resultados.getInt("humedad");
+                String descripcion = resultados.getString("descripcion");
+                String fecha = resultados.getString("fecha");
+                String hora = resultados.getString("hora");
+                
+                ClimaCiudad newClimaCiudad = new ClimaCiudad(ciudad, temperatura, humedad, descripcion, fecha, hora);
+                bd_clima_copia.add(newClimaCiudad);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("No se pudo conectar a la base de datos");
+        }
     }
     
     @Override
     public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
-        return null;
+        return bd_clima_copia;
     }
 
     @Override
     public ClimaCiudad consultarClima(String ciudad) throws RemoteException {
-	
-    	
         try {
             String pais = "CL";  // Código de país para Chile
             String urlString = String.format(
@@ -157,8 +160,6 @@ public class ServerImpl implements InterfazDeServer {
             ObjectMapper mapper = new ObjectMapper();
             ClimaAPIResponse data = mapper.readValue(jsonRespuesta.toString(), ClimaAPIResponse.class);
 
-            
-            
             double temp = data.main.temp;
             int humedad = data.main.humidity;
             String descripcion = data.weather.get(0).description;
@@ -167,12 +168,9 @@ public class ServerImpl implements InterfazDeServer {
             String fechaConsulta = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String horaConsulta = ahora.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-            
-            
             ClimaCiudad clima = new ClimaCiudad(ciudad, temp, humedad, descripcion, fechaConsulta, horaConsulta);
             historial.add(clima);
             guardarEnBaseDeDatos(clima); // <-- Aquí se guarda automáticamente
-            
             
             return clima;
 
@@ -184,7 +182,7 @@ public class ServerImpl implements InterfazDeServer {
     
     @Override
     public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
-    	ArrayList<String> alertas = new ArrayList<>();
+        ArrayList<String> alertas = new ArrayList<>();
 
         ClimaCiudad clima = consultarClima(ciudad); // Usa el método actual
         double temp = clima.getTemperatura();
@@ -210,5 +208,4 @@ public class ServerImpl implements InterfazDeServer {
 
         return alertas;
     }
-
 }
