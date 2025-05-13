@@ -27,99 +27,70 @@ public class ServerImpl implements InterfazDeServer {
     }
     
     private void guardarEnBaseDeDatos(ClimaCiudad clima) {
-        String url = "jdbc:mysql://localhost:3306/clima";
-        String username = "root";
-        String password_BD = "";
-        PreparedStatement ps = null;
+        String url = "jdbc:postgresql://ep-restless-feather-a4yytmir-pooler.us-east-1.aws.neon.tech/clima?user=neondb_owner&password=npg_dgtFaq29TzHK&sslmode=require";
 
-        try{
-            Connection con = DriverManager.getConnection(url, username, password_BD);
-            ps = con.prepareStatement(
-                "INSERT INTO clima_ciudad (ciudad, temperatura, humedad, descripcion, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)"
-            );
-            ps.setString(1, clima.getCiudad());
-            ps.setDouble(2, clima.getTemperatura());
-            ps.setInt(3, clima.getHumedad());
-            ps.setString(4, clima.getDescripcion());
-            ps.setString(5, clima.getFechaConsulta());
-            ps.setString(6, clima.getHoraConsulta());
-            ps.executeUpdate();
+        try (Connection con = DriverManager.getConnection(url)) {
+            String sql = "INSERT INTO clima_ciudad (ciudad, temperatura, humedad, descripcion, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, clima.getCiudad());
+                ps.setDouble(2, clima.getTemperatura());
+                ps.setInt(3, clima.getHumedad());
+                ps.setString(4, clima.getDescripcion());
+                ps.setDate(5, Date.valueOf(clima.getFechaConsulta()));
+                ps.setTime(6, Time.valueOf(clima.getHoraConsulta()));
+                ps.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Error al guardar en la base de datos.");
+            System.err.println("Error al guardar en la base de datos PostgreSQL.");
         }
     }
-    
+
     public void ConectarBD() {
-        String driver = "com.mysql.cj.jdbc.Driver"; // Cambiado a el driver actualizado para MySQL
+        String url = "jdbc:postgresql://ep-restless-feather-a4yytmir-pooler.us-east-1.aws.neon.tech/clima?user=neondb_owner&password=npg_dgtFaq29TzHK&sslmode=require";
         Connection connection = null;
-        Statement query = null;
+        Statement stmt = null;
         ResultSet resultados = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
 
         try {
-            // Verificamos si la base de datos 'clima' existe
-            String url = "jdbc:mysql://localhost:3306/";
-            String username = "root";
-            String password_BD = "";
-            
-            connection = DriverManager.getConnection(url, username, password_BD);
-            query = connection.createStatement();
-            
-            // Verificar si la base de datos 'clima' existe
-            rs = query.executeQuery("SHOW DATABASES LIKE 'clima'");
-            if (!rs.next()) {
-                System.out.println("Base de datos 'clima' no existe. Creando...");
-                query.executeUpdate("CREATE DATABASE clima");
-            }
-            
-            // Ahora nos conectamos a la base de datos 'clima'
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", username, password_BD);
-            query = connection.createStatement();
-            
-            // Verificar si la tabla 'clima_ciudad' existe
-            rs = query.executeQuery("SHOW TABLES LIKE 'clima_ciudad'");
-            if (!rs.next()) {
-                System.out.println("Tabla 'clima_ciudad' no existe. Creando...");
-                String createTableSQL = "CREATE TABLE clima_ciudad ("
-                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            connection = DriverManager.getConnection(url);
+            stmt = connection.createStatement();
+
+            // Crear tabla si no existe
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS clima_ciudad ("
+                    + "id SERIAL PRIMARY KEY, "
                     + "ciudad VARCHAR(100), "
-                    + "temperatura DOUBLE, "
+                    + "temperatura DOUBLE PRECISION, "
                     + "humedad INT, "
                     + "descripcion VARCHAR(255), "
                     + "fecha DATE, "
                     + "hora TIME)";
-                query.executeUpdate(createTableSQL);
-                System.out.println("Tabla 'clima_ciudad' creada exitosamente.");
-            }
-            
-	        // Verifica si la conexión fue exitosa
-            if (connection != null) {
-                System.out.println("Conexión a la base de datos 'clima' exitosa.");
-            }
-            
+            stmt.executeUpdate(createTableSQL);
+            System.out.println("✅ Tabla 'clima_ciudad' verificada/creada.");
+
             // Recuperar los datos existentes
             String sql = "SELECT * FROM clima_ciudad";
-            resultados = query.executeQuery(sql);
+            resultados = stmt.executeQuery(sql);
             while (resultados.next()) {
-                int id = resultados.getInt("id");
                 String ciudad = resultados.getString("ciudad");
                 double temperatura = resultados.getDouble("temperatura");
                 int humedad = resultados.getInt("humedad");
                 String descripcion = resultados.getString("descripcion");
-                String fecha = resultados.getString("fecha");
-                String hora = resultados.getString("hora");
-                
+                String fecha = resultados.getDate("fecha").toString();
+                String hora = resultados.getTime("hora").toString();
+
                 ClimaCiudad newClimaCiudad = new ClimaCiudad(ciudad, temperatura, humedad, descripcion, fecha, hora);
                 bd_clima_copia.add(newClimaCiudad);
             }
+
+            System.out.println("✅ Conexión y carga desde PostgreSQL exitosa.");
+
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("No se pudo conectar a la base de datos");
+            System.err.println("❌ No se pudo conectar o consultar la base de datos en Neon.");
         }
     }
-    
+
     @Override
     public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
         return bd_clima_copia;
