@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
@@ -158,9 +160,14 @@ public class ServerImpl implements InterfazDeServer {
     public ClimaCiudad consultarClima(String ciudad) throws RemoteException {
         try {
             String pais = "CL";  // Código de país para Chile
+            
+            // Codificar la ciudad para URL (maneja espacios, ñ, acentos, etc)
+            String ciudadCodificada = URLEncoder.encode(ciudad, StandardCharsets.UTF_8.toString());
+
+            // Construir la URL con la ciudad codificada
             String urlString = String.format(
                 "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s&units=metric&lang=es",
-                ciudad, pais, API_KEY);
+                ciudadCodificada, pais, API_KEY);
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -169,6 +176,7 @@ public class ServerImpl implements InterfazDeServer {
             int status = conn.getResponseCode();
             if (status != 200) {
                 if (status == 404) {
+                    System.err.println("Ciudad no encontrada: " + ciudad);
                     return null; // Ciudad no encontrada
                 } else {
                     System.err.println("Error en la conexión: Código " + status);
@@ -185,7 +193,7 @@ public class ServerImpl implements InterfazDeServer {
             in.close();
             conn.disconnect();
 
-            // 🔁 Aquí usamos Jackson para deserializar la respuesta JSON
+            // Deserializar la respuesta JSON con Jackson
             ObjectMapper mapper = new ObjectMapper();
             ClimaAPIResponse data = mapper.readValue(jsonRespuesta.toString(), ClimaAPIResponse.class);
 
@@ -197,10 +205,12 @@ public class ServerImpl implements InterfazDeServer {
             String fechaConsulta = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String horaConsulta = ahora.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
+            // Crear objeto ClimaCiudad con el nombre original de la ciudad (sin codificar)
             ClimaCiudad clima = new ClimaCiudad(ciudad, temp, humedad, descripcion, fechaConsulta, horaConsulta);
+
             historial.add(clima);
-            guardarEnBaseDeDatos(clima); // <-- Aquí se guarda automáticamente
-            
+            guardarEnBaseDeDatos(clima); // Guarda automáticamente
+
             return clima;
 
         } catch (Exception e) {
