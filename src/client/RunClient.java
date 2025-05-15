@@ -50,8 +50,16 @@ public class RunClient {
                     	}
                     	break;
                     case 3:
-                    	//clima.getHistorial();
-                        
+                        ArrayList<ClimaCiudad> historial = client.getHistorial();
+
+                        if (historial.isEmpty()) {
+                            System.out.println("No hay consultas registradas aún.");
+                        } else {
+                            System.out.println("===== HISTORIAL DE CONSULTAS =====");
+                            for (ClimaCiudad registro : historial) {
+                                System.out.println(registro);
+                            }
+                        }
                         break;
                     case 4:
                         System.out.println("Saliendo...");

@@ -26,6 +26,7 @@ public class ServerImpl implements InterfazDeServer {
         UnicastRemoteObject.exportObject(this, 0);        
     }
     
+    // Método para guardar el clima en la base de datos
     private void guardarEnBaseDeDatos(ClimaCiudad clima) {
         String url = "jdbc:mysql://localhost:3306/clima";
         String username = "root";
@@ -50,8 +51,9 @@ public class ServerImpl implements InterfazDeServer {
         }
     }
     
+    // Método para conectar a la base de datos y crearla si no existe
     public void ConectarBD() {
-        String driver = "com.mysql.cj.jdbc.Driver"; // Cambiado a el driver actualizado para MySQL
+        String driver = "com.mysql.cj.jdbc.Driver";
         Connection connection = null;
         Statement query = null;
         ResultSet resultados = null;
@@ -122,9 +124,36 @@ public class ServerImpl implements InterfazDeServer {
     
     @Override
     public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
-        return bd_clima_copia;
+        ArrayList<ClimaCiudad> historialBD = new ArrayList<>();
+        String url = "jdbc:mysql://localhost:3306/clima";
+        String username = "root";
+        String password_BD = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password_BD);
+            Statement stmt = connection.createStatement();
+            ResultSet resultados = stmt.executeQuery("SELECT * FROM clima_ciudad")) {
+
+            while (resultados.next()) {
+                String ciudad = resultados.getString("ciudad");
+                double temperatura = resultados.getDouble("temperatura");
+                int humedad = resultados.getInt("humedad");
+                String descripcion = resultados.getString("descripcion");
+                String fecha = resultados.getString("fecha");
+                String hora = resultados.getString("hora");
+
+                ClimaCiudad clima = new ClimaCiudad(ciudad, temperatura, humedad, descripcion, fecha, hora);
+                historialBD.add(clima);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error al recuperar historial desde la base de datos.");
+        }
+
+        return historialBD;
     }
 
+    // Método para consultar el clima de una ciudad
     @Override
     public ClimaCiudad consultarClima(String ciudad) throws RemoteException {
         try {
@@ -180,6 +209,7 @@ public class ServerImpl implements InterfazDeServer {
         }
     }
     
+    // Método para generar alertas climáticas
     @Override
     public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
         ArrayList<String> alertas = new ArrayList<>();
