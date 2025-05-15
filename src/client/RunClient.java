@@ -21,49 +21,53 @@ public class RunClient {
                 System.out.println("3. Ver historial de consultas");
                 System.out.println("4. Salir");
                 System.out.print("Seleccione una opción: ");
-                opcion = scanner.nextInt();
-                scanner.nextLine(); // limpiar buffer
-                String ciudad;
+
+                String input = scanner.nextLine(); // lee como string
+
+                try {
+                    opcion = Integer.parseInt(input); // intenta convertir a número
+                } catch (NumberFormatException e) {
+                    System.out.println("Entrada inválida. Por favor, ingrese un número del 1 al 4.");
+                    System.out.println();
+                    continue; // vuelve a mostrar el menú
+                }
 
                 switch (opcion) {
                     case 1:
-                    	System.out.print("Ingrese la ciudad: ");
-                    	ciudad = scanner.nextLine();
-
-                    	ClimaCiudad clima = client.consultarClima(ciudad);
-
-                    	if (clima == null) {
-                    	    System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
-                    	} else {
-                    	    System.out.println("Clima actual: " + clima);
-                    	}
+                        System.out.print("Ingrese la ciudad: ");
+                        String ciudad = scanner.nextLine();
+                        ClimaCiudad clima = client.consultarClima(ciudad);
+                        if (clima == null) {
+                            System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
+                        } else {
+                            System.out.println("Clima actual: " + clima);
+                        }
                         break;
 
                     case 2:
-                    	System.out.print("Ingrese ciudad para revisar alertas climáticas: ");
-                    	ciudad = scanner.nextLine();
+                        System.out.print("Ingrese ciudad para revisar alertas climáticas: ");
+                        ciudad = scanner.nextLine();
+                        ArrayList<String> alertas = client.generarAlertas(ciudad);
+                        System.out.println("Alertas para " + ciudad + ":");
+                        for (String alerta : alertas) {
+                            System.out.println("- " + alerta);
+                        }
+                        break;
 
-                    	ArrayList<String> alertas = client.generarAlertas(ciudad);
-                    	System.out.println("Alertas para " + ciudad + ":");
-                    	for (String alerta : alertas) {
-                    	    System.out.println("- " + alerta);
-                    	}
-                    	break;
                     case 3:
                         ArrayList<ClimaCiudad> historial = client.getHistorial();
-
                         if (historial.isEmpty()) {
-                            System.out.println("No hay consultas registradas aún.");
+                            System.out.println("No hay consultas previas registradas.");
                         } else {
-                            System.out.println("===== HISTORIAL DE CONSULTAS =====");
+                            System.out.println("Historial de consultas climáticas:");
                             for (ClimaCiudad registro : historial) {
-                                System.out.println(registro);
+                                System.out.println("- " + registro);
                             }
                         }
                         break;
+
                     case 4:
                         System.out.println("Saliendo...");
-                        
                         break;
 
                     default:
