@@ -11,11 +11,11 @@ import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.ArrayList;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import server.ClimaAPIResponse; // Asegúrate de importar tu clase mapeadora
 import common.ClimaCiudad;
 import common.InterfazDeServer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.net.URI;
 
 public class ServerImpl implements InterfazDeServer {
 
@@ -55,11 +55,9 @@ public class ServerImpl implements InterfazDeServer {
     
     // Método para conectar a la base de datos y crearla si no existe
     public void ConectarBD() {
-        String driver = "com.mysql.cj.jdbc.Driver";
         Connection connection = null;
         Statement query = null;
         ResultSet resultados = null;
-        PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
@@ -121,7 +119,6 @@ public class ServerImpl implements InterfazDeServer {
             String sql = "SELECT * FROM clima_ciudad";
             resultados = query.executeQuery(sql);
             while (resultados.next()) {
-                int id = resultados.getInt("id");
                 String ciudad = resultados.getString("ciudad");
                 double temperatura = resultados.getDouble("temperatura");
                 int humedad = resultados.getInt("humedad");
@@ -184,7 +181,7 @@ public class ServerImpl implements InterfazDeServer {
                 "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s&units=metric&lang=es",
                 ciudadCodificada, pais, API_KEY);
 
-            URL url = new URL(urlString);
+            URL url = URI.create(urlString).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
