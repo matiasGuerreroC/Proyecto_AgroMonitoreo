@@ -28,4 +28,8 @@ public class Client {
     public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
         return new ArrayList<>(server.generarAlertas(ciudad));
     }
+
+    public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {
+        return new ArrayList<>(server.obtenerHistorialAlertas(ciudad));
+    }
 }

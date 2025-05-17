@@ -18,7 +18,7 @@ public class RunClient {
                 System.out.println("===== MENÚ CLIMA =====");
                 System.out.println("1. Consultar clima por ciudad");
                 System.out.println("2. Alerta Climatica por ciudad");
-                System.out.println("3. Ver historial de consultas");
+                System.out.println("3. Ver historial");
                 System.out.println("4. Salir");
                 System.out.print("Seleccione una opción: ");
 
@@ -47,23 +47,59 @@ public class RunClient {
                     case 2:
                         System.out.print("Ingrese ciudad para revisar alertas climáticas: ");
                         ciudad = scanner.nextLine();
+
+                        // Obtener el clima actual
+                        ClimaCiudad climaActual = client.consultarClima(ciudad);
+
+                        // Mostrar resumen del clima
+                        System.out.println("\n--- Clima actual en " + ciudad + " ---");
+                        System.out.println("Temperatura: " + climaActual.getTemperatura() + "°C");
+                        System.out.println("Humedad: " + climaActual.getHumedad() + "%");
+                        System.out.println("Descripción: " + climaActual.getDescripcion());
+                        System.out.println("Fecha: " + climaActual.getFechaConsulta());
+                        System.out.println("Hora: " + climaActual.getHoraConsulta());
+
+                        // Mostrar alertas asociadas
                         ArrayList<String> alertas = client.generarAlertas(ciudad);
-                        System.out.println("Alertas para " + ciudad + ":");
+                        System.out.println("\n--- Alertas Climáticas ---");
                         for (String alerta : alertas) {
                             System.out.println("- " + alerta);
                         }
+                        System.out.println(); // Línea en blanco final
                         break;
 
                     case 3:
-                        ArrayList<ClimaCiudad> historial = client.getHistorial();
-                        if (historial.isEmpty()) {
-                            System.out.println("No hay consultas previas registradas.");
-                        } else {
-                            System.out.println("Historial de consultas climáticas:");
-                            for (ClimaCiudad registro : historial) {
-                                System.out.println("- " + registro);
-                            }
+                        System.out.println("¿Qué historial desea ver?");
+                        System.out.println("1. Historial de consultas");
+                        System.out.println("2. Historial de alertas climáticas");
+                        System.out.print("Seleccione una opción: ");
+                        int opcionHistorial = Integer.parseInt(scanner.nextLine());
+
+                        switch (opcionHistorial) {
+                            case 1:
+                                ArrayList<ClimaCiudad> historial = client.getHistorial();
+                                if (historial.isEmpty()) {
+                                    System.out.println("No hay consultas previas registradas.");
+                                } else {
+                                    System.out.println("\n--- Historial de consultas climáticas ---");
+                                    for (ClimaCiudad registro : historial) {
+                                        System.out.println("- " + registro);
+                                    }
+                                }
+                                break;
+                            case 2:
+                                System.out.print("Ingrese ciudad para ver historial de alertas: ");
+                                ciudad = scanner.nextLine();
+                                ArrayList<String> historialAlertas = client.obtenerHistorialAlertas(ciudad);
+                                System.out.println("\n--- Historial de alertas climáticas para " + ciudad + " ---");
+                                for (String alerta : historialAlertas) {
+                                    System.out.println("- " + alerta);
+                                }
+                                break;
+                            default:
+                                System.out.println("Opción no válida.");
                         }
+                        System.out.println(); // Línea en blanco final
                         break;
 
                     case 4:

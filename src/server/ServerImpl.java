@@ -67,21 +67,21 @@ public class ServerImpl implements InterfazDeServer {
             String url = "jdbc:mysql://localhost:3306/";
             String username = "root";
             String password_BD = "";
-            
+
             connection = DriverManager.getConnection(url, username, password_BD);
             query = connection.createStatement();
-            
+
             // Verificar si la base de datos 'clima' existe
             rs = query.executeQuery("SHOW DATABASES LIKE 'clima'");
             if (!rs.next()) {
                 System.out.println("Base de datos 'clima' no existe. Creando...");
                 query.executeUpdate("CREATE DATABASE clima");
             }
-            
+
             // Ahora nos conectamos a la base de datos 'clima'
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", username, password_BD);
             query = connection.createStatement();
-            
+
             // Verificar si la tabla 'clima_ciudad' existe
             rs = query.executeQuery("SHOW TABLES LIKE 'clima_ciudad'");
             if (!rs.next()) {
@@ -97,13 +97,27 @@ public class ServerImpl implements InterfazDeServer {
                 query.executeUpdate(createTableSQL);
                 System.out.println("Tabla 'clima_ciudad' creada exitosamente.");
             }
-            
-	        // Verifica si la conexión fue exitosa
+
+            // Verificar si la tabla 'alertas_climaticas' existe
+            rs = query.executeQuery("SHOW TABLES LIKE 'alertas_climaticas'");
+            if (!rs.next()) {
+                System.out.println("Tabla 'alertas_climaticas' no existe. Creando...");
+                String createAlertasTableSQL = "CREATE TABLE alertas_climaticas ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "ciudad VARCHAR(100), "
+                    + "alerta TEXT, "
+                    + "fecha DATE, "
+                    + "hora TIME)";
+                query.executeUpdate(createAlertasTableSQL);
+                System.out.println("Tabla 'alertas_climaticas' creada exitosamente.");
+            }
+
+            // Verifica si la conexión fue exitosa
             if (connection != null) {
                 System.out.println("Conexión a la base de datos 'clima' exitosa.");
             }
-            
-            // Recuperar los datos existentes
+
+            // Recuperar los datos existentes de clima_ciudad
             String sql = "SELECT * FROM clima_ciudad";
             resultados = query.executeQuery(sql);
             while (resultados.next()) {
@@ -114,10 +128,11 @@ public class ServerImpl implements InterfazDeServer {
                 String descripcion = resultados.getString("descripcion");
                 String fecha = resultados.getString("fecha");
                 String hora = resultados.getString("hora");
-                
+
                 ClimaCiudad newClimaCiudad = new ClimaCiudad(ciudad, temperatura, humedad, descripcion, fecha, hora);
                 bd_clima_copia.add(newClimaCiudad);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("No se pudo conectar a la base de datos");
@@ -218,13 +233,44 @@ public class ServerImpl implements InterfazDeServer {
             return null;
         }
     }
+
+    @Override
+    public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {
+        ArrayList<String> historialAlertas = new ArrayList<>();
+        String DB_URL = "jdbc:mysql://localhost:3306/clima";
+        String DB_USER = "root";
+        String DB_PASSWORD = "";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT alerta, fecha, hora FROM alertas_climaticas WHERE ciudad = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, ciudad);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        String alerta = rs.getString("alerta");
+                        String fecha = rs.getString("fecha");
+                        String hora = rs.getString("hora");
+                        historialAlertas.add(fecha + " " + hora + " - " + alerta);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            historialAlertas.add("Error al recuperar el historial de alertas.");
+        }
+
+        if (historialAlertas.isEmpty()) {
+            historialAlertas.add("No hay alertas registradas para esta ciudad.");
+        }
+
+        return historialAlertas;
+    }
     
-    // Método para generar alertas climáticas
     @Override
     public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
         ArrayList<String> alertas = new ArrayList<>();
 
-        ClimaCiudad clima = consultarClima(ciudad); // Usa el método actual
+        ClimaCiudad clima = consultarClima(ciudad);
         double temp = clima.getTemperatura();
         int humedad = clima.getHumedad();
         String descripcion = clima.getDescripcion().toLowerCase();
@@ -246,6 +292,27 @@ public class ServerImpl implements InterfazDeServer {
             alertas.add("Sin alertas climáticas.");
         }
 
+        // Registrar en la base de datos
+        guardarAlertasEnBD(ciudad, alertas);
+
         return alertas;
+    }
+
+    private void guardarAlertasEnBD(String ciudad, ArrayList<String> alertas) {
+        String DB_URL = "jdbc:mysql://localhost:3306/clima";
+        String DB_USER = "root";
+        String DB_PASSWORD = "";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String insert = "INSERT INTO alertas_climaticas (ciudad, alerta, fecha, hora) VALUES (?, ?, CURDATE(), CURTIME())";
+            try (PreparedStatement stmt = conn.prepareStatement(insert)) {
+                for (String alerta : alertas) {
+                    stmt.setString(1, ciudad);
+                    stmt.setString(2, alerta);
+                    stmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
