@@ -25,8 +25,8 @@ public class Client {
         return server.consultarClima(ciudad);
     }
     
-    public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
-        return new ArrayList<>(server.generarAlertas(ciudad));
+    public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException {
+        return new ArrayList<>(server.generarAlertas(clima));
     }
 
     public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {

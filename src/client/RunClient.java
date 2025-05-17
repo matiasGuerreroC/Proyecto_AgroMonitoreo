@@ -60,7 +60,7 @@ public class RunClient {
                         System.out.println("Hora: " + climaActual.getHoraConsulta());
 
                         // Mostrar alertas asociadas
-                        ArrayList<String> alertas = client.generarAlertas(ciudad);
+                        ArrayList<String> alertas = client.generarAlertas(climaActual);
                         System.out.println("\n--- Alertas Climáticas ---");
                         for (String alerta : alertas) {
                             System.out.println("- " + alerta);

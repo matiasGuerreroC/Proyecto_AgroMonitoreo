@@ -264,10 +264,9 @@ public class ServerImpl implements InterfazDeServer {
     }
     
     @Override
-    public ArrayList<String> generarAlertas(String ciudad) throws RemoteException {
+    public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException {
         ArrayList<String> alertas = new ArrayList<>();
 
-        ClimaCiudad clima = consultarClima(ciudad);
         double temp = clima.getTemperatura();
         int humedad = clima.getHumedad();
         String descripcion = clima.getDescripcion().toLowerCase();
@@ -290,12 +289,12 @@ public class ServerImpl implements InterfazDeServer {
         }
 
         // Registrar en la base de datos
-        guardarAlertasEnBD(ciudad, alertas);
+        guardarAlertasEnBD(clima, alertas);
 
         return alertas;
     }
 
-    private void guardarAlertasEnBD(String ciudad, ArrayList<String> alertas) {
+    private void guardarAlertasEnBD(ClimaCiudad clima, ArrayList<String> alertas) {
         String DB_URL = "jdbc:mysql://localhost:3306/clima";
         String DB_USER = "root";
         String DB_PASSWORD = "";
@@ -303,7 +302,7 @@ public class ServerImpl implements InterfazDeServer {
             String insert = "INSERT INTO alertas_climaticas (ciudad, alerta, fecha, hora) VALUES (?, ?, CURDATE(), CURTIME())";
             try (PreparedStatement stmt = conn.prepareStatement(insert)) {
                 for (String alerta : alertas) {
-                    stmt.setString(1, ciudad);
+                    stmt.setString(1, clima.getCiudad());
                     stmt.setString(2, alerta);
                     stmt.executeUpdate();
                 }
