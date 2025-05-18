@@ -5,12 +5,15 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
+
 import common.ClimaCiudad;
 
 public class RunClient {
     public static void main(String[] args) {
         try {
             Client client = new Client();
+            client.clienteConectado();
             Scanner scanner = new Scanner(System.in);
             int opcion = 0;
 
@@ -42,21 +45,27 @@ public class RunClient {
                 }
 
                 switch (opcion) {
-                    case 1:
-                        String respuestaConsulta;
-                        do {
-                            System.out.print("Ingrese la ciudad: ");
-                            String ciudad = scanner.nextLine();
-                            ClimaCiudad clima = client.consultarClima(ciudad);
-                            if (clima == null) {
-                                System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
-                            } else {
-                                System.out.println("Clima actual: " + clima);
-                            }
-                            System.out.print("¿Desea consultar otra ciudad? (s/n): ");
-                            respuestaConsulta = scanner.nextLine();
-                        } while (respuestaConsulta.equalsIgnoreCase("s"));
-                        break;
+	                case 1:
+	                    String respuestaConsulta;
+	                    do {
+	                        System.out.print("Ingrese la ciudad: ");
+	                        String ciudad = scanner.nextLine();
+	                        ClimaCiudad clima = client.consultarClima(ciudad);
+	                        if (clima == null) {
+	                            System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
+	                        } else {
+	                            System.out.println("\nCLIMA ACTUAL EN " + ciudad.toUpperCase());
+	                            System.out.println("-----------------------------");
+	                            System.out.println("Temperatura: " + clima.getTemperatura() + "°C");
+	                            System.out.println("Humedad: " + clima.getHumedad() + "%");
+	                            System.out.println("Descripción: " + clima.getDescripcion());
+	                            System.out.println("Fecha: " + clima.getFechaConsulta());
+	                            System.out.println("Hora: " + clima.getHoraConsulta());
+	                        }
+	                        System.out.print("¿Desea consultar otra ciudad? (s/n): ");
+	                        respuestaConsulta = scanner.nextLine();
+	                    } while (respuestaConsulta.equalsIgnoreCase("s"));
+	                    break;
 
                     case 2:
                         String respuestaAlerta;
