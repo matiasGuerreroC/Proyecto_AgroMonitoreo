@@ -112,7 +112,13 @@ public class ServerImpl implements InterfazDeServer {
 
             // Verifica si la conexión fue exitosa
             if (connection != null) {
-                System.out.println("Conexión a la base de datos 'clima' exitosa.");
+            	if (connection != null) {
+            	    System.out.println("╔══════════════════════════════════════════════╗");
+            	    System.out.println("║                                              ║");
+            	    System.out.println("║ Conexión exitosa a la base de datos 'clima'  ║");
+            	    System.out.println("║                                              ║");
+            	    System.out.println("╚══════════════════════════════════════════════╝");
+            	}
             }
 
             // Recuperar los datos existentes de clima_ciudad
