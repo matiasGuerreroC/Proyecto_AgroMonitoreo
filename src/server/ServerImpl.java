@@ -28,6 +28,12 @@ public class ServerImpl implements InterfazDeServer {
         UnicastRemoteObject.exportObject(this, 0);        
     }
     
+    public void clienteConectado() throws RemoteException {
+        System.out.println("\n================== AgroMonitoreo ==================");
+        System.out.println("            El usuario ha iniciado sesión         ");
+        System.out.println("===================================================\n");
+    }
+
     // Método para guardar el clima en la base de datos
     public void guardarEnBaseDeDatos(ClimaCiudad clima) {
         String url = "jdbc:mysql://localhost:3306/clima";
