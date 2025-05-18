@@ -13,6 +13,12 @@ public class RunServer {
         Registry registry = LocateRegistry.createRegistry(1009);
         registry.bind("server", server);
 
-        System.out.println("Servidor de Clima Iniciado en el puerto 1009.");
+        // Mensaje de inicio
+        System.out.println("╔══════════════════════════════════════════════╗");
+        System.out.println("║                                              ║");
+        System.out.println("║   Servidor de Clima Iniciado correctamente   ║");
+        System.out.println("║            Puerto en uso: 1009               ║");
+        System.out.println("║                                              ║");
+        System.out.println("╚══════════════════════════════════════════════╝");
     }
 }
