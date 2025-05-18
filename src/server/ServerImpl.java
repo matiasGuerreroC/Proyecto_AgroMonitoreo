@@ -19,7 +19,7 @@ import java.net.URI;
 
 public class ServerImpl implements InterfazDeServer {
 
-    private final String API_KEY = "00699a1a425bce6e4a3daddf1b447487"; // <-- Reemplaza por tu clave
+    private final String API_KEY = "00699a1a425bce6e4a3daddf1b447487"; 
     private ArrayList<ClimaCiudad> historial = new ArrayList<>();
     private ArrayList<ClimaCiudad> bd_clima_copia = new ArrayList<>();
     
@@ -29,13 +29,13 @@ public class ServerImpl implements InterfazDeServer {
     }
     
     // Método para guardar el clima en la base de datos
-    private void guardarEnBaseDeDatos(ClimaCiudad clima) {
+    public void guardarEnBaseDeDatos(ClimaCiudad clima) {
         String url = "jdbc:mysql://localhost:3306/clima";
         String username = "root";
         String password_BD = "";
         PreparedStatement ps = null;
 
-        try{
+        try {
             Connection con = DriverManager.getConnection(url, username, password_BD);
             ps = con.prepareStatement(
                 "INSERT INTO clima_ciudad (ciudad, temperatura, humedad, descripcion, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)"
@@ -46,10 +46,22 @@ public class ServerImpl implements InterfazDeServer {
             ps.setString(4, clima.getDescripcion());
             ps.setString(5, clima.getFechaConsulta());
             ps.setString(6, clima.getHoraConsulta());
-            ps.executeUpdate();
+            int filas = ps.executeUpdate();
+
+            String mensaje;
+            if (filas > 0) {
+                mensaje = "Clima de la ciudad '" + clima.getCiudad() + "' guardado exitosamente en la base de datos.";
+            } else {
+                mensaje = "No se pudo guardar el clima de la ciudad '" + clima.getCiudad() + "' en la base de datos.";
+            }
+            imprimirCuadro(mensaje);
+
+            ps.close();
+            con.close();
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Error al guardar en la base de datos.");
+            String mensaje = "Error al guardar en la base de datos el clima de la ciudad '" + clima.getCiudad() + "'.";
+            imprimirCuadro(mensaje);
         }
     }
     
@@ -138,7 +150,9 @@ public class ServerImpl implements InterfazDeServer {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("No se pudo conectar a la base de datos");
+            System.out.println("╔════════════════════════════════════════════╗");
+            System.out.println("║  No se pudo conectar a la base de datos    ║");
+            System.out.println("╚════════════════════════════════════════════╝");
         }
     }
     
@@ -167,7 +181,9 @@ public class ServerImpl implements InterfazDeServer {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error al recuperar historial desde la base de datos.");
+            System.out.println("╔══════════════════════════════════════════════╗");
+            System.out.println("║  Error al recuperar historial desde la BD.   ║");
+            System.out.println("╚══════════════════════════════════════════════╝");
         }
 
         return historialBD;
@@ -194,10 +210,10 @@ public class ServerImpl implements InterfazDeServer {
             int status = conn.getResponseCode();
             if (status != 200) {
                 if (status == 404) {
-                    System.err.println("Ciudad no encontrada: " + ciudad);
+                    imprimirCuadro("Ciudad no encontrada: " + ciudad);
                     return null; // Ciudad no encontrada
                 } else {
-                    System.err.println("Error en la conexión: Código " + status);
+                    imprimirCuadro("Error en la conexión: Código " + status);
                     return null;
                 }
             }
@@ -229,10 +245,11 @@ public class ServerImpl implements InterfazDeServer {
             historial.add(clima);
             guardarEnBaseDeDatos(clima); // Guarda automáticamente
 
+            imprimirCuadro("Clima de la ciudad '" + ciudad + "' obtenido y guardado exitosamente.");
             return clima;
 
         } catch (Exception e) {
-            System.err.println("No se pudo obtener el clima de la API: " + e.getMessage());
+            imprimirCuadro("No se pudo obtener el clima de la API.");
             return null;
         }
     }
@@ -259,13 +276,13 @@ public class ServerImpl implements InterfazDeServer {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            imprimirCuadro("Error al recuperar el historial de alertas.");
             historialAlertas.add("Error al recuperar el historial de alertas.");
         }
-
         if (historialAlertas.isEmpty()) {
+            imprimirCuadro("No hay alertas registradas para esta ciudad.");
             historialAlertas.add("No hay alertas registradas para esta ciudad.");
         }
-
         return historialAlertas;
     }
     
@@ -292,15 +309,19 @@ public class ServerImpl implements InterfazDeServer {
 
         if (alertas.isEmpty()) {
             alertas.add("Sin alertas climáticas.");
+            imprimirCuadro("Sin alertas climáticas.");
+        } else {
+            for (String alerta : alertas) {
+                imprimirCuadro(alerta);
+            }
         }
-
         // Registrar en la base de datos
         guardarAlertasEnBD(clima, alertas);
 
         return alertas;
     }
 
-    private void guardarAlertasEnBD(ClimaCiudad clima, ArrayList<String> alertas) {
+    public void guardarAlertasEnBD(ClimaCiudad clima, ArrayList<String> alertas) {
         String DB_URL = "jdbc:mysql://localhost:3306/clima";
         String DB_USER = "root";
         String DB_PASSWORD = "";
@@ -310,11 +331,34 @@ public class ServerImpl implements InterfazDeServer {
                 for (String alerta : alertas) {
                     stmt.setString(1, clima.getCiudad());
                     stmt.setString(2, alerta);
-                    stmt.executeUpdate();
+                    int filas = stmt.executeUpdate();
+
+                    String mensaje;
+                    if (filas > 0) {
+                        mensaje = "Alerta '" + alerta + "' para ciudad '" + clima.getCiudad() + "' guardada exitosamente en la BD.";
+                    } else {
+                        mensaje = "No se pudo guardar la alerta '" + alerta + "' para ciudad '" + clima.getCiudad() + "'.";
+                    }
+
+                    imprimirCuadro(mensaje);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            String mensaje = "Error al guardar las alertas en la base de datos para la ciudad '" + clima.getCiudad() + "'.";
+            imprimirCuadro(mensaje);
         }
     }
+
+    private void imprimirCuadro(String mensaje) {
+        int largo = mensaje.length();
+        String bordeSuperior = "╔" + "═".repeat(largo + 2) + "╗";
+        String lineaMensaje = "║ " + mensaje + " ║";
+        String bordeInferior = "╚" + "═".repeat(largo + 2) + "╝";
+
+        System.out.println(bordeSuperior);
+        System.out.println(lineaMensaje);
+        System.out.println(bordeInferior);
+    }
+   
 }
