@@ -96,4 +96,16 @@ public class Client {
     public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {
         return stub.obtenerHistorialAlertas(ciudad);
     }
+
+    public boolean agregarFavorito(String cliente, String ciudad) throws RemoteException {
+        return stub.agregarFavorito(cliente, ciudad);
+    }
+
+    public boolean eliminarFavorito(String cliente, String ciudad) throws RemoteException {
+        return stub.eliminarFavorito(cliente, ciudad);
+    }
+
+    public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException {
+        return stub.obtenerFavoritos(cliente);
+    }
 }

@@ -5,8 +5,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
-
 import common.ClimaCiudad;
 
 public class RunClient {
@@ -26,14 +24,15 @@ public class RunClient {
             System.out.println("Presione Enter para continuar...");
             scanner.nextLine();
 
-            while (opcion != 4) {
-                System.out.println("\n╔══════════════════════╗");
-                System.out.println("║      MENÚ CLIMA      ║");
-                System.out.println("╚══════════════════════╝");
+            while (opcion != 5) {
+                System.out.println("\n╔═════════════════════════════╗");
+                System.out.println("║        MENÚ CLIMA           ║");
+                System.out.println("╚═════════════════════════════╝");
                 System.out.println("1. Consultar clima por ciudad");
                 System.out.println("2. Alerta climática por ciudad");
                 System.out.println("3. Ver historial");
-                System.out.println("4. Salir");
+                System.out.println("4. Gestionar ciudades favoritas");
+                System.out.println("5. Salir");
                 System.out.print("Seleccione una opción: ");
 
                 String input = scanner.nextLine();
@@ -159,8 +158,71 @@ public class RunClient {
                             }
                         }
                         break;
-
+                    
                     case 4:
+                    System.out.print("Ingrese su nombre de cliente: ");
+                    String cliente = scanner.nextLine();
+
+                    ArrayList<ClimaCiudad> favoritas = client.obtenerFavoritos(cliente);
+                    if (favoritas.isEmpty()) {
+                        System.out.println("No tienes ciudades favoritas registradas.");
+                    } else {
+                        System.out.println("\nTUS CIUDADES FAVORITAS (actualizadas)");
+                        System.out.println("-------------------------------------");
+                        for (ClimaCiudad climaFav : favoritas) {
+                            System.out.println("Ciudad: " + climaFav.getCiudad());
+                            System.out.println("Temperatura: " + climaFav.getTemperatura() + "°C");
+                            System.out.println("Humedad: " + climaFav.getHumedad() + "%");
+                            System.out.println("Descripción: " + climaFav.getDescripcion());
+                            System.out.println("Fecha: " + climaFav.getFechaConsulta());
+                            System.out.println("Hora: " + climaFav.getHoraConsulta());
+                            System.out.println("-------------------------------------");
+                        }
+                    }
+
+                    boolean gestionar = true;
+                    while (gestionar) {
+                        System.out.println("\nOPCIONES DE FAVORITOS");
+                        System.out.println("1. Agregar nueva ciudad favorita");
+                        System.out.println("2. Eliminar ciudad favorita");
+                        System.out.println("3. Volver al menú principal");
+                        System.out.print("Seleccione una opción: ");
+                        String inputFavoritos = scanner.nextLine();
+
+                        switch (inputFavoritos) {
+                            case "1":
+                                System.out.print("Ingrese el nombre de la ciudad a agregar: ");
+                                String ciudadAgregar = scanner.nextLine();
+                                boolean agregado = client.agregarFavorito(cliente, ciudadAgregar);
+                                if (agregado) {
+                                    System.out.println("Ciudad agregada correctamente a favoritos.");
+                                } else {
+                                    System.out.println("La ciudad ya está en tus favoritos o hubo un error.");
+                                }
+                                break;
+
+                            case "2":
+                                System.out.print("Ingrese el nombre de la ciudad a eliminar: ");
+                                String ciudadEliminar = scanner.nextLine();
+                                boolean eliminado = client.eliminarFavorito(cliente, ciudadEliminar);
+                                if (eliminado) {
+                                    System.out.println("Ciudad eliminada correctamente de favoritos.");
+                                } else {
+                                    System.out.println("No se pudo eliminar la ciudad o no estaba en favoritos.");
+                                }
+                                break;
+
+                            case "3":
+                                gestionar = false;
+                                break;
+
+                            default:
+                                System.out.println("Opción no válida.");
+                        }
+                    }
+                    break;
+
+                    case 5:
                         System.out.println("\n╔════════════════════════════════════════════════╗");
                         System.out.println("║      Gracias por usar AgroMonitoreo.           ║");
                         System.out.println("║      Presione Enter para salir del programa.   ║");
