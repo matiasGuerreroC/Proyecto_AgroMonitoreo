@@ -366,5 +366,10 @@ public class ServerImpl implements InterfazDeServer {
         System.out.println(lineaMensaje);
         System.out.println(bordeInferior);
     }
-   
+
+    @Override
+    public int heartbeat() throws RemoteException {
+        System.out.println("Heartbeat recibido por el servidor: OK");
+        return 1; // Retorna 1 para indicar que el servidor está activo
+    }
 }

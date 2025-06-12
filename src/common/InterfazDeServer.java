@@ -11,4 +11,6 @@ public interface InterfazDeServer extends Remote {
     public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException;
 
     public void clienteConectado() throws RemoteException;
+
+    public int heartbeat() throws RemoteException;
 }
