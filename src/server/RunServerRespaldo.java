@@ -4,26 +4,26 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import common.InterfazDeServer;
 
-public class RunServer {
+public class RunServerRespaldo {
     public static void main(String[] args) {
         try {
-            InterfazDeServer server = new ServerImpl();
+            InterfazDeServer backupServer = new ServerImpl();
 
-            // Crear el registro RMI en el puerto 1009
-            Registry registry = LocateRegistry.createRegistry(1009);
+            // Crear el registro RMI en el puerto 1010 (distinto al principal)
+            Registry registry = LocateRegistry.createRegistry(1010);
 
-            // Registrar el servidor principal con un nombre único
-            registry.bind("server", server);
+            // Registrar el servidor de respaldo con un nombre único
+            registry.bind("server", backupServer);
 
-            // Mensaje bonito de inicio
+            // Mensaje de confirmación
             System.out.println("╔══════════════════════════════════════════════╗");
             System.out.println("║                                              ║");
-            System.out.println("║      Servidor de Clima PRINCIPAL Activo      ║");
-            System.out.println("║             Puerto en uso: 1009              ║");
+            System.out.println("║     Servidor de Clima de RESPALDO Activo     ║");
+            System.out.println("║             Puerto en uso: 1010              ║");
             System.out.println("║                                              ║");
             System.out.println("╚══════════════════════════════════════════════╝");
         } catch (Exception e) {
-            System.err.println("Error al iniciar el servidor principal: " + e.getMessage());
+            System.err.println("Error al iniciar el servidor de respaldo: " + e.getMessage());
             e.printStackTrace();
         }
     }
