@@ -536,6 +536,28 @@ public class ServerImpl implements InterfazDeServer {
         return favoritos;
     }
 
+    @Override
+    public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException {
+        String clientName = "Cliente " + cliente;
+        if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        ArrayList<String> nombres = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
+            String sql = "SELECT ciudad FROM favoritos WHERE cliente = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, cliente);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    nombres.add(rs.getString("ciudad"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            releaseMutex(clientName);
+        }
+        return nombres;
+    }
 
     @Override
     public int heartbeat() throws RemoteException {

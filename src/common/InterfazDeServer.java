@@ -20,4 +20,5 @@ public interface InterfazDeServer extends Remote {
     public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException; // SELECT
     public boolean actualizarFavorito(String cliente, String ciudad) throws RemoteException; // UPDATE
 
+    public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException;
 }

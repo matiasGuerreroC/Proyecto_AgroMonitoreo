@@ -108,4 +108,12 @@ public class Client {
     public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException {
         return stub.obtenerFavoritos(cliente);
     }
+
+    public boolean actualizarFavorito(String cliente, String ciudad) throws RemoteException {
+        return stub.actualizarFavorito(cliente, ciudad);
+    }
+
+    public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException {
+        return stub.getNombresFavoritos(cliente);
+    }
 }
