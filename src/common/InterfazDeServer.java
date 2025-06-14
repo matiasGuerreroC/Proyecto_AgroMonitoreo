@@ -10,15 +10,16 @@ public interface InterfazDeServer extends Remote {
     public ClimaCiudad consultarClima(String ciudad) throws RemoteException;
     public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException;
 
-    public void clienteConectado() throws RemoteException;
+    public void clienteConectado(String nombreCliente) throws RemoteException;
+    public void clienteDesconectado(String nombreCliente) throws RemoteException;
 
     // Heartbeat para detección de fallos
     public int heartbeat() throws RemoteException;
 
-    public boolean agregarFavorito(String cliente, String ciudad) throws RemoteException;   // INSERT
-    public boolean eliminarFavorito(String cliente, String ciudad) throws RemoteException; // DELETE
-    public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException; // SELECT
-    public boolean actualizarFavorito(String cliente, String ciudad) throws RemoteException; // UPDATE
+    public boolean agregarFavorito(String cliente, String ciudad) throws RemoteException;
+    public boolean eliminarFavorito(String cliente, String ciudad) throws RemoteException;
+    public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException;
+    public boolean actualizarFavorito(String cliente, String ciudad) throws RemoteException;
 
     public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException;
 }
