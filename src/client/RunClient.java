@@ -11,18 +11,21 @@ public class RunClient {
     public static void main(String[] args) {
         try {
             Client client = new Client();
-            client.clienteConectado();
+            client.clienteConectado("Cliente 1");
             Scanner scanner = new Scanner(System.in);
             int opcion = 0;
+            
 
             // Mensaje de bienvenida
-            System.out.println("╔══════════════════════════════════════╗");
-            System.out.println("║   ¡Bienvenid@ a AgroMonitoreo :)!    ║");
-            System.out.println("║   Sistema de monitoreo climático     ║");
-            System.out.println("║   para campos agrícolas distribuidos ║");
-            System.out.println("╚══════════════════════════════════════╝");
+            System.out.println("╔════════════════════════════════════════════════════╗");
+            System.out.println("║        ¡Bienvenid@ al Cliente 1 de                 ║");
+            System.out.println("║               AgroMonitoreo :)!                    ║");
+            System.out.println("║  Sistema de monitoreo climático para campos        ║");
+            System.out.println("║        agrícolas distribuidos                      ║");
+            System.out.println("╚════════════════════════════════════════════════════╝");
             System.out.println("Presione Enter para continuar...");
             scanner.nextLine();
+
 
             while (opcion != 5) {
                 System.out.println("\n╔═════════════════════════════╗");
@@ -232,11 +235,16 @@ public class RunClient {
                         System.out.println("║      Gracias por usar AgroMonitoreo.           ║");
                         System.out.println("║      Presione Enter para salir del programa.   ║");
                         System.out.println("╚════════════════════════════════════════════════╝");
+                        
+                        // Avisar al servidor que el cliente se desconecta
+                        client.clienteDesconectado("Cliente 1");
+                        
                         scanner.nextLine(); // Se espera a que el usuario presione Enter
+                        System.exit(0);
                         break;
 
                     default:
-                        System.out.println("Opción inválida. Por favor, ingrese un número del 1 al 4.");
+                        System.out.println("Opción inválida. Por favor, ingrese un número del 1 al 5.");
                         break;
                 }
             }
