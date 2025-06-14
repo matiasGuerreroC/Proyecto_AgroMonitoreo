@@ -101,23 +101,23 @@ public class Client {
         return stub.obtenerHistorialAlertas(ciudad, nombreCliente);
     }
 
-    public boolean agregarFavorito(String cliente, String ciudad) throws RemoteException {
-        return stub.agregarFavorito(cliente, ciudad);
+    public boolean agregarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException {
+        return stub.agregarFavorito(usuario, ciudad, nombreCliente);
     }
 
-    public boolean eliminarFavorito(String cliente, String ciudad) throws RemoteException {
-        return stub.eliminarFavorito(cliente, ciudad);
+    public boolean eliminarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException {
+        return stub.eliminarFavorito(usuario, ciudad, nombreCliente);
     }
 
-    public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException {
-        return stub.obtenerFavoritos(cliente);
+    public ArrayList<ClimaCiudad> obtenerFavoritos(String usuario, String nombreCliente) throws RemoteException {
+        return stub.obtenerFavoritos(usuario, nombreCliente);
     }
 
-    public boolean actualizarFavorito(String cliente, String ciudad) throws RemoteException {
-        return stub.actualizarFavorito(cliente, ciudad);
+    public boolean actualizarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException {
+        return stub.actualizarFavorito(usuario, ciudad, nombreCliente);
     }
 
-    public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException {
-        return stub.getNombresFavoritos(cliente);
+    public ArrayList<String> getNombresFavoritos(String usuario, String nombreCliente) throws RemoteException {
+        return stub.getNombresFavoritos(usuario, nombreCliente);
     }
 }

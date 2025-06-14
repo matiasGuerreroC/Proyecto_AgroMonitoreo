@@ -27,14 +27,14 @@ public interface InterfazDeServer extends Remote {
     public int heartbeat() throws RemoteException;
 
     // Gestión de favoritos
-    public boolean agregarFavorito(String nombreCliente, String ciudad) throws RemoteException;
+    public boolean agregarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException;
 
-    public boolean eliminarFavorito(String nombreCliente, String ciudad) throws RemoteException;
+    public boolean eliminarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException;
 
-    public ArrayList<ClimaCiudad> obtenerFavoritos(String nombreCliente) throws RemoteException;
+    public ArrayList<ClimaCiudad> obtenerFavoritos(String usuario, String nombreCliente) throws RemoteException;
 
-    public boolean actualizarFavorito(String nombreCliente, String ciudad) throws RemoteException;
+    public boolean actualizarFavorito(String usuario, String ciudad, String nombreCliente) throws RemoteException;
 
-    public ArrayList<String> getNombresFavoritos(String nombreCliente) throws RemoteException;
+    public ArrayList<String> getNombresFavoritos(String usuario, String nombreCliente) throws RemoteException;
 }
 

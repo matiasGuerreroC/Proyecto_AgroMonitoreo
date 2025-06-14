@@ -161,12 +161,15 @@ public class RunClient2 {
                         break;
 
                     case 4:
-                        ArrayList<String> nombresFavoritos = client.getNombresFavoritos(nombreCliente);
+                        System.out.print("Ingrese su nombre usuario: ");
+                        String usuario = scanner.nextLine();
+
+                        ArrayList<String> nombresFavoritos = client.getNombresFavoritos(usuario, nombreCliente); // Nuevo método
                         for (String ciudadFav : nombresFavoritos) {
-                            client.actualizarFavorito(nombreCliente, ciudadFav);
+                            client.actualizarFavorito(usuario, ciudadFav, nombreCliente);
                         }
 
-                        ArrayList<ClimaCiudad> favoritas = client.obtenerFavoritos(nombreCliente);
+                        ArrayList<ClimaCiudad> favoritas = client.obtenerFavoritos(usuario, nombreCliente);
                         if (favoritas.isEmpty()) {
                             System.out.println("No tienes ciudades favoritas registradas.");
                         } else {
@@ -196,7 +199,7 @@ public class RunClient2 {
                                 case "1":
                                     System.out.print("Ingrese el nombre de la ciudad a agregar: ");
                                     String ciudadAgregar = scanner.nextLine();
-                                    boolean agregado = client.agregarFavorito(nombreCliente, ciudadAgregar);
+                                    boolean agregado = client.agregarFavorito(usuario, ciudadAgregar, nombreCliente);
                                     if (agregado) {
                                         System.out.println("Ciudad agregada correctamente a favoritos.");
                                     } else {
@@ -207,7 +210,7 @@ public class RunClient2 {
                                 case "2":
                                     System.out.print("Ingrese el nombre de la ciudad a eliminar: ");
                                     String ciudadEliminar = scanner.nextLine();
-                                    boolean eliminado = client.eliminarFavorito(nombreCliente, ciudadEliminar);
+                                    boolean eliminado = client.eliminarFavorito(usuario, ciudadEliminar, nombreCliente);
                                     if (eliminado) {
                                         System.out.println("Ciudad eliminada correctamente de favoritos.");
                                     } else {
