@@ -11,14 +11,17 @@ public class RunClient2 {
     public static void main(String[] args) {
         try {
             Client client = new Client();
-            client.clienteConectado();
+            client.clienteConectado("Cliente 2");
             Scanner scanner = new Scanner(System.in);
             int opcion = 0;
 
-            System.out.println("╔═══════════════════════════════════════════════╗");
-            System.out.println("║   ¡Bienvenid@ a AgroMonitoreo [CLIENTE 2]!    ║");
-            System.out.println("║   Sistema de monitoreo climático distribuido  ║");
-            System.out.println("╚═══════════════════════════════════════════════╝");
+            // Mensaje de bienvenida
+            System.out.println("╔════════════════════════════════════════════════════╗");
+            System.out.println("║        ¡Bienvenid@ al Cliente 2 de                 ║");
+            System.out.println("║               AgroMonitoreo :)!                    ║");
+            System.out.println("║  Sistema de monitoreo climático para campos        ║");
+            System.out.println("║        agrícolas distribuidos                      ║");
+            System.out.println("╚════════════════════════════════════════════════════╝");
             System.out.println("Presione Enter para continuar...");
             scanner.nextLine();
 
@@ -225,11 +228,16 @@ public class RunClient2 {
                         System.out.println("║      Gracias por usar AgroMonitoreo.           ║");
                         System.out.println("║      Presione Enter para salir del programa.   ║");
                         System.out.println("╚════════════════════════════════════════════════╝");
+                        
+                        // Avisar al servidor que el cliente se desconecta
+                        client.clienteDesconectado("Cliente 1");
+                        
                         scanner.nextLine(); // Se espera a que el usuario presione Enter
+                        System.exit(0);
                         break;
 
                     default:
-                        System.out.println("Opción inválida. Por favor, ingrese un número del 1 al 4.");
+                        System.out.println("Opción inválida. Por favor, ingrese un número del 1 al 5.");
                         break;
                 }
             }
