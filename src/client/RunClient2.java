@@ -230,7 +230,7 @@ public class RunClient2 {
                         System.out.println("╚════════════════════════════════════════════════╝");
                         
                         // Avisar al servidor que el cliente se desconecta
-                        client.clienteDesconectado("Cliente 1");
+                        client.clienteDesconectado("Cliente 2");
                         
                         scanner.nextLine(); // Se espera a que el usuario presione Enter
                         System.exit(0);
