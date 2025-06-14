@@ -16,10 +16,12 @@ public class Client {
     private final int backupPort = 1010;
     private boolean connectedToPrimary = true;
     private boolean running = true;
+    private String nombreCliente;
 
-    public Client() throws RemoteException, NotBoundException {
+    public Client(String nombreCliente) throws RemoteException, NotBoundException {
+        this.nombreCliente = nombreCliente;
         conectarServidorPrincipal();
-        startHeartbeat(); // Inicia monitoreo de servidor
+        startHeartbeat();
     }
 
     private void startHeartbeat() {
@@ -30,10 +32,10 @@ public class Client {
                     stub.heartbeat(); // Llamada liviana
                 } catch (RemoteException e) {
                     if (connectedToPrimary) {
-                        System.err.println("Servidor principal caído. Cambiando a servidor de respaldo...");
+                        System.err.println("\nServidor principal caído. Cambiando a servidor de respaldo...");
                         cambiarAServidorRespaldo();
                     } else {
-                        System.err.println("Servidor de respaldo también cayó. Terminando ejecución...");
+                        System.err.println("\nServidor de respaldo también cayó. Terminando ejecución...");
                         System.exit(1);
                     }
                 } catch (InterruptedException e) {
@@ -62,6 +64,11 @@ public class Client {
         } else {
             connectedToPrimary = false;
             System.out.println("Conectado al servidor de respaldo");
+            try {
+                stub.clienteConectado(nombreCliente);  // <-- AÑADE ESTA LÍNEA
+            } catch (RemoteException e) {
+                System.err.println("Error al notificar conexión al servidor de respaldo: " + e.getMessage());
+            }
         }
     }
 

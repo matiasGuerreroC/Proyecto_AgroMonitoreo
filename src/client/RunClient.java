@@ -10,7 +10,7 @@ import common.ClimaCiudad;
 public class RunClient {
     public static void main(String[] args) {
         try {
-            Client client = new Client();
+            Client client = new Client("Cliente 1");
             String nombreCliente = "Cliente 1";
             client.clienteConectado(nombreCliente);
             Scanner scanner = new Scanner(System.in);

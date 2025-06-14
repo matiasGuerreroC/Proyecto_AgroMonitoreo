@@ -10,7 +10,7 @@ import common.ClimaCiudad;
 public class RunClient2 {
     public static void main(String[] args) {
         try {
-            Client client = new Client();
+            Client client = new Client("Cliente 2");
             String nombreCliente = "Cliente 2";  // Nombre fijo para identificar cliente 2
             client.clienteConectado(nombreCliente);  // Informar al servidor que cliente 2 se conectó
             
