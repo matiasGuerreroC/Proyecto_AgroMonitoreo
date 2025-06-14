@@ -11,7 +11,9 @@ public class RunClient2 {
     public static void main(String[] args) {
         try {
             Client client = new Client();
-            client.clienteConectado("Cliente 2");
+            String nombreCliente = "Cliente 2";  // Nombre fijo para identificar cliente 2
+            client.clienteConectado(nombreCliente);  // Informar al servidor que cliente 2 se conectó
+            
             Scanner scanner = new Scanner(System.in);
             int opcion = 0;
 
@@ -40,62 +42,60 @@ public class RunClient2 {
                 try {
                     opcion = Integer.parseInt(input);
                 } catch (NumberFormatException e) {
-                    System.out.println("Entrada inválida. Por favor, ingrese un número del 1 al 4.");
+                    System.out.println("Entrada inválida. Por favor, ingrese un número del 1 al 5.");
                     continue;
                 }
 
                 switch (opcion) {
-	                case 1:
-	                    String respuestaConsulta;
-	                    do {
-	                        System.out.print("Ingrese la ciudad: ");
-	                        String ciudad = scanner.nextLine();
-	                        ClimaCiudad clima = client.consultarClima(ciudad);
-	                        if (clima == null) {
-	                            System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
-	                        } else {
-	                            System.out.println("\nCLIMA ACTUAL EN " + ciudad.toUpperCase());
-	                            System.out.println("-----------------------------");
-	                            System.out.println("Temperatura: " + clima.getTemperatura() + "°C");
-	                            System.out.println("Humedad: " + clima.getHumedad() + "%");
-	                            System.out.println("Descripción: " + clima.getDescripcion());
-	                            System.out.println("Fecha: " + clima.getFechaConsulta());
-	                            System.out.println("Hora: " + clima.getHoraConsulta());
-	                        }
-	                        System.out.print("¿Desea consultar otra ciudad? (s/n): ");
-	                        respuestaConsulta = scanner.nextLine();
-	                    } while (respuestaConsulta.equalsIgnoreCase("s"));
-	                    break;
+                    case 1:
+                        String respuestaConsulta;
+                        do {
+                            System.out.print("Ingrese la ciudad: ");
+                            String ciudad = scanner.nextLine();
+                            ClimaCiudad clima = client.consultarClima(ciudad, nombreCliente);
+                            if (clima == null) {
+                                System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
+                            } else {
+                                System.out.println("\nCLIMA ACTUAL EN " + ciudad.toUpperCase());
+                                System.out.println("-----------------------------");
+                                System.out.println("Temperatura: " + clima.getTemperatura() + "°C");
+                                System.out.println("Humedad: " + clima.getHumedad() + "%");
+                                System.out.println("Descripción: " + clima.getDescripcion());
+                                System.out.println("Fecha: " + clima.getFechaConsulta());
+                                System.out.println("Hora: " + clima.getHoraConsulta());
+                            }
+                            System.out.print("¿Desea consultar otra ciudad? (s/n): ");
+                            respuestaConsulta = scanner.nextLine();
+                        } while (respuestaConsulta.equalsIgnoreCase("s"));
+                        break;
 
                     case 2:
                         String respuestaAlerta;
                         do {
                             System.out.print("Ingrese ciudad para revisar alertas climáticas: ");
                             String ciudad = scanner.nextLine();
-
-                            ClimaCiudad climaActual = client.consultarClima(ciudad);
+                            ClimaCiudad climaActual = client.consultarClima(ciudad, nombreCliente);
                             if (climaActual == null) {
                                 System.out.println("Ciudad no encontrada. Verifique el nombre e intente nuevamente.");
                             } else {
-                            	System.out.println("\nCLIMA ACTUAL EN " + ciudad.toUpperCase());
-                            	System.out.println("-----------------------------");
-                            	System.out.println("Temperatura: " + climaActual.getTemperatura() + "°C");
-                            	System.out.println("Humedad: " + climaActual.getHumedad() + "%");
-                            	System.out.println("Descripción: " + climaActual.getDescripcion());
-                            	System.out.println("Fecha: " + climaActual.getFechaConsulta());
-                            	System.out.println("Hora: " + climaActual.getHoraConsulta());
+                                System.out.println("\nCLIMA ACTUAL EN " + ciudad.toUpperCase());
+                                System.out.println("-----------------------------");
+                                System.out.println("Temperatura: " + climaActual.getTemperatura() + "°C");
+                                System.out.println("Humedad: " + climaActual.getHumedad() + "%");
+                                System.out.println("Descripción: " + climaActual.getDescripcion());
+                                System.out.println("Fecha: " + climaActual.getFechaConsulta());
+                                System.out.println("Hora: " + climaActual.getHoraConsulta());
 
-                            	ArrayList<String> alertas = client.generarAlertas(climaActual);
-                            	System.out.println("\nALERTAS CLIMÁTICAS");
-                            	System.out.println("-----------------------------");
-                            	if (alertas.isEmpty()) {
-                            	    System.out.println("No hay alertas climáticas en este momento.");
-                            	} else {
-                            	    for (String alerta : alertas) {
-                            	        System.out.println("- " + alerta);
-                            	    }
-                            	}
-
+                                ArrayList<String> alertas = client.generarAlertas(climaActual, nombreCliente);
+                                System.out.println("\nALERTAS CLIMÁTICAS");
+                                System.out.println("-----------------------------");
+                                if (alertas.isEmpty()) {
+                                    System.out.println("No hay alertas climáticas en este momento.");
+                                } else {
+                                    for (String alerta : alertas) {
+                                        System.out.println("- " + alerta);
+                                    }
+                                }
                             }
                             System.out.print("¿Desea revisar otra ciudad? (s/n): ");
                             respuestaAlerta = scanner.nextLine();
@@ -120,7 +120,7 @@ public class RunClient2 {
 
                             switch (opcionHistorial) {
                                 case 1:
-                                    ArrayList<ClimaCiudad> historial = client.getHistorial();
+                                    ArrayList<ClimaCiudad> historial = client.getHistorial(nombreCliente);
                                     if (historial.isEmpty()) {
                                         System.out.println("No hay consultas previas registradas.");
                                     } else {
@@ -135,7 +135,7 @@ public class RunClient2 {
                                 case 2:
                                     System.out.print("Ingrese ciudad para ver historial de alertas: ");
                                     String ciudad = scanner.nextLine();
-                                    ArrayList<String> historialAlertas = client.obtenerHistorialAlertas(ciudad);
+                                    ArrayList<String> historialAlertas = client.obtenerHistorialAlertas(ciudad, nombreCliente);
                                     if (historialAlertas.isEmpty()) {
                                         System.out.println("No hay alertas previas registradas para " + ciudad + ".");
                                     } else {
@@ -159,17 +159,14 @@ public class RunClient2 {
                             }
                         }
                         break;
-                    
-                    case 4:
-                        System.out.print("Ingrese su nombre de cliente: ");
-                        String cliente = scanner.nextLine();
 
-                        ArrayList<String> nombresFavoritos = client.getNombresFavoritos(cliente); // Nuevo método
+                    case 4:
+                        ArrayList<String> nombresFavoritos = client.getNombresFavoritos(nombreCliente);
                         for (String ciudadFav : nombresFavoritos) {
-                            client.actualizarFavorito(cliente, ciudadFav);
+                            client.actualizarFavorito(nombreCliente, ciudadFav);
                         }
-                        
-                        ArrayList<ClimaCiudad> favoritas = client.obtenerFavoritos(cliente);
+
+                        ArrayList<ClimaCiudad> favoritas = client.obtenerFavoritos(nombreCliente);
                         if (favoritas.isEmpty()) {
                             System.out.println("No tienes ciudades favoritas registradas.");
                         } else {
@@ -199,7 +196,7 @@ public class RunClient2 {
                                 case "1":
                                     System.out.print("Ingrese el nombre de la ciudad a agregar: ");
                                     String ciudadAgregar = scanner.nextLine();
-                                    boolean agregado = client.agregarFavorito(cliente, ciudadAgregar);
+                                    boolean agregado = client.agregarFavorito(nombreCliente, ciudadAgregar);
                                     if (agregado) {
                                         System.out.println("Ciudad agregada correctamente a favoritos.");
                                     } else {
@@ -210,7 +207,7 @@ public class RunClient2 {
                                 case "2":
                                     System.out.print("Ingrese el nombre de la ciudad a eliminar: ");
                                     String ciudadEliminar = scanner.nextLine();
-                                    boolean eliminado = client.eliminarFavorito(cliente, ciudadEliminar);
+                                    boolean eliminado = client.eliminarFavorito(nombreCliente, ciudadEliminar);
                                     if (eliminado) {
                                         System.out.println("Ciudad eliminada correctamente de favoritos.");
                                     } else {
@@ -233,11 +230,9 @@ public class RunClient2 {
                         System.out.println("║      Gracias por usar AgroMonitoreo.           ║");
                         System.out.println("║      Presione Enter para salir del programa.   ║");
                         System.out.println("╚════════════════════════════════════════════════╝");
-                        
-                        // Avisar al servidor que el cliente se desconecta
-                        client.clienteDesconectado("Cliente 2");
-                        
-                        scanner.nextLine(); // Se espera a que el usuario presione Enter
+
+                        client.clienteDesconectado(nombreCliente);
+                        scanner.nextLine(); // Esperar que el usuario presione Enter
                         System.exit(0);
                         break;
 

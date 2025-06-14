@@ -44,12 +44,17 @@ public class ServerImpl implements InterfazDeServer {
         System.out.println("===================================================\n");
     }
 
-    private boolean requestMutex(String clientName) {
+    private boolean requestMutex(String nombreCliente) {
         try {
-            System.out.println(clientName + " intentando acceder a zona crítica...");
+            System.out.println("\n================== Zona Crítica ==================");
+            System.out.printf("   %s está intentando acceder a la zona crítica%n", nombreCliente);
+            System.out.println("==================================================\n");
+
             boolean acquired = lock.tryLock(60, TimeUnit.SECONDS);
             if (acquired) {
-                System.out.println(clientName + " obtuvo el bloqueo.");
+                System.out.println("\n================== Zona Crítica ==================");
+                System.out.printf("   %s obtuvo el bloqueo MUTEX%n", nombreCliente);
+                System.out.println("==================================================\n");
             }
             return acquired;
         } catch (InterruptedException e) {
@@ -58,9 +63,11 @@ public class ServerImpl implements InterfazDeServer {
         }
     }
 
-    private void releaseMutex(String clientName) {
-        System.out.println(clientName + " liberó el bloqueo.");
+    private void releaseMutex(String nombreCliente) {
         lock.unlock();
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s ha liberado el bloqueo MUTEX%n", nombreCliente);
+        System.out.println("==================================================\n");
     }
 
     // Método para guardar el clima en la base de datos
@@ -206,9 +213,13 @@ public class ServerImpl implements InterfazDeServer {
     }
     
     @Override
-    public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
+    public ArrayList<ClimaCiudad> getHistorial(String nombreCliente) throws RemoteException {
         String clientName = "Cliente Historial";
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está accediendo al historial climático%n", clientName);
+        System.out.println("==================================================\n");
 
         ArrayList<ClimaCiudad> historialBD = new ArrayList<>();
         String url = "jdbc:mysql://localhost:3306/clima";
@@ -216,8 +227,8 @@ public class ServerImpl implements InterfazDeServer {
         String password_BD = "";
 
         try (Connection connection = DriverManager.getConnection(url, username, password_BD);
-            Statement stmt = connection.createStatement();
-            ResultSet resultados = stmt.executeQuery("SELECT * FROM clima_ciudad")) {
+             Statement stmt = connection.createStatement();
+             ResultSet resultados = stmt.executeQuery("SELECT * FROM clima_ciudad")) {
 
             while (resultados.next()) {
                 String ciudad = resultados.getString("ciudad");
@@ -232,10 +243,10 @@ public class ServerImpl implements InterfazDeServer {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
             System.out.println("╔══════════════════════════════════════════════╗");
-            System.out.println("║  Error al recuperar historial desde la BD.   ║");
+            System.out.println("║   Error al recuperar historial desde la BD   ║");
             System.out.println("╚══════════════════════════════════════════════╝");
+            e.printStackTrace();
         } finally {
             releaseMutex(clientName);
         }
@@ -243,19 +254,19 @@ public class ServerImpl implements InterfazDeServer {
         return historialBD;
     }
 
-    // Método para consultar el clima de una ciudad
+    
     @Override
-    public ClimaCiudad consultarClima(String ciudad) throws RemoteException {
-        String clientName = "Cliente " + ciudad;
-        if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+    public ClimaCiudad consultarClima(String ciudad, String nombreCliente) throws RemoteException {
+        if (!requestMutex(nombreCliente)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está consultando el clima de: %s%n", nombreCliente, ciudad);
+        System.out.println("==================================================\n");
 
         try {
             String pais = "CL";  // Código de país para Chile
-
-            // Codificar la ciudad para URL (maneja espacios, ñ, acentos, etc)
             String ciudadCodificada = URLEncoder.encode(ciudad, StandardCharsets.UTF_8.toString());
 
-            // Construir la URL con la ciudad codificada
             String urlString = String.format(
                 "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s&units=metric&lang=es",
                 ciudadCodificada, pais, API_KEY
@@ -285,7 +296,6 @@ public class ServerImpl implements InterfazDeServer {
             in.close();
             conn.disconnect();
 
-            // Deserializar la respuesta JSON con Jackson
             ObjectMapper mapper = new ObjectMapper();
             ClimaAPIResponse data = mapper.readValue(jsonRespuesta.toString(), ClimaAPIResponse.class);
 
@@ -309,14 +319,18 @@ public class ServerImpl implements InterfazDeServer {
             imprimirCuadro("No se pudo obtener el clima de la API.");
             return null;
         } finally {
-            releaseMutex(clientName);
+            releaseMutex(nombreCliente);
         }
     }
 
     @Override
-    public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {
+    public ArrayList<String> obtenerHistorialAlertas(String ciudad, String nombreCliente) throws RemoteException {
         String clientName = "Cliente " + ciudad;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está accediendo al historial de alertas de: %s%n", clientName, ciudad);
+        System.out.println("==================================================\n");
 
         ArrayList<String> historialAlertas = new ArrayList<>();
         String DB_URL = "jdbc:mysql://localhost:3306/clima";
@@ -347,15 +361,21 @@ public class ServerImpl implements InterfazDeServer {
         if (historialAlertas.isEmpty()) {
             imprimirCuadro("No hay alertas registradas para esta ciudad.");
             historialAlertas.add("No hay alertas registradas para esta ciudad.");
+        } else {
+            imprimirCuadro("Historial de alertas obtenido exitosamente.");
         }
 
         return historialAlertas;
     }
     
     @Override
-    public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException {
+    public ArrayList<String> generarAlertas(ClimaCiudad clima, String nombreCliente) throws RemoteException {
         String clientName = "Cliente " + clima.getCiudad();
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está generando alertas climáticas%n", clientName);
+        System.out.println("==================================================\n");
 
         ArrayList<String> alertas = new ArrayList<>();
 
@@ -367,7 +387,9 @@ public class ServerImpl implements InterfazDeServer {
             if (temp > 35) alertas.add("Alerta: Calor extremo");
             if (temp < 0) alertas.add("Alerta: Posible helada");
             if (humedad < 30) alertas.add("Alerta: Humedad baja - posible sequía");
-            if (descripcion.contains("lluvia") || descripcion.contains("tormenta")) alertas.add("Alerta: Lluvia o tormenta detectada");
+            if (descripcion.contains("lluvia") || descripcion.contains("tormenta")) {
+                alertas.add("Alerta: Lluvia o tormenta detectada");
+            }
 
             if (alertas.isEmpty()) {
                 alertas.add("Sin alertas climáticas.");
@@ -379,6 +401,7 @@ public class ServerImpl implements InterfazDeServer {
             }
 
             guardarAlertasEnBD(clima, alertas);
+            imprimirCuadro("Proceso de generación de alertas finalizado.");
             return alertas;
         } finally {
             releaseMutex(clientName);
@@ -430,6 +453,10 @@ public class ServerImpl implements InterfazDeServer {
         String clientName = "Cliente " + cliente;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
 
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está agregando '%s' como ciudad favorita%n", clientName, ciudad);
+        System.out.println("==================================================\n");
+
         try {
             // Simula retención de zona crítica por 15 segundos
             Thread.sleep(15000);
@@ -441,21 +468,28 @@ public class ServerImpl implements InterfazDeServer {
                     ps.setString(1, cliente);
                     ps.setString(2, ciudad);
                     ResultSet rs = ps.executeQuery();
-                    if (rs.next()) return false;
+                    if (rs.next()) {
+                        imprimirCuadro(ciudad + " ya estaba en los favoritos de " + cliente);
+                        return false;
+                    }
                 }
 
                 String insert = "INSERT INTO favoritos (cliente, ciudad) VALUES (?, ?)";
                 try (PreparedStatement ps = conn.prepareStatement(insert)) {
-                    ps.setString(1, cliente);
-                    ps.setString(2, ciudad);
-                    return ps.executeUpdate() > 0;
+                    boolean resultado = ps.executeUpdate() > 0;
+                    if (resultado) {
+                        imprimirCuadro("Se agregó '" + ciudad + "' a favoritos de " + cliente);
+                    }
+                    return resultado;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                imprimirCuadro("Error al agregar favorito a la base de datos.");
                 return false;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+            imprimirCuadro("Interrupción durante la simulación de zona crítica.");
             return false;
         } finally {
             releaseMutex(clientName);
@@ -467,10 +501,17 @@ public class ServerImpl implements InterfazDeServer {
         String clientName = "Cliente " + cliente;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
 
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está actualizando su favorito: '%s'%n", clientName, ciudad);
+        System.out.println("==================================================\n");
+
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
             // Obtiene clima actualizado
-            ClimaCiudad clima = consultarClima(ciudad);
-            if (clima == null) return false;
+            ClimaCiudad clima = consultarClima(cliente, ciudad);
+            if (clima == null) {
+                imprimirCuadro("No se pudo obtener el clima para actualizar.");
+                return false;
+            }
 
             // Actualiza el registro
             String update = "UPDATE favoritos SET temperatura = ?, humedad = ?, descripcion = ?, fecha = ?, hora = ? WHERE cliente = ? AND ciudad = ?";
@@ -482,10 +523,17 @@ public class ServerImpl implements InterfazDeServer {
                 ps.setString(5, clima.getHoraConsulta());
                 ps.setString(6, cliente);
                 ps.setString(7, ciudad);
-                return ps.executeUpdate() > 0;
+                boolean actualizado = ps.executeUpdate() > 0;
+                if (actualizado) {
+                    imprimirCuadro("Favorito actualizado para " + cliente + ": " + ciudad);
+                } else {
+                    imprimirCuadro("No se encontró el favorito para actualizar.");
+                }
+                return actualizado;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            imprimirCuadro("Error al actualizar favorito en la base de datos.");
             return false;
         } finally {
             releaseMutex(clientName);
@@ -497,15 +545,26 @@ public class ServerImpl implements InterfazDeServer {
         String clientName = "Cliente " + cliente;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
 
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está eliminando '%s' de sus favoritos%n", clientName, ciudad);
+        System.out.println("==================================================\n");
+
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
             String delete = "DELETE FROM favoritos WHERE cliente = ? AND ciudad = ?";
             try (PreparedStatement ps = conn.prepareStatement(delete)) {
                 ps.setString(1, cliente);
                 ps.setString(2, ciudad);
-                return ps.executeUpdate() > 0;
+                boolean eliminado = ps.executeUpdate() > 0;
+                if (eliminado) {
+                    imprimirCuadro("Ciudad '" + ciudad + "' eliminada de favoritos de " + cliente);
+                } else {
+                    imprimirCuadro("No se encontró la ciudad '" + ciudad + "' en los favoritos de " + cliente);
+                }
+                return eliminado;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            imprimirCuadro("Error al eliminar favorito de la base de datos.");
             return false;
         } finally {
             releaseMutex(clientName);
@@ -516,6 +575,10 @@ public class ServerImpl implements InterfazDeServer {
     public ArrayList<ClimaCiudad> obtenerFavoritos(String cliente) throws RemoteException {
         String clientName = "Cliente " + cliente;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está consultando su lista de favoritos%n", clientName);
+        System.out.println("==================================================\n");
 
         ArrayList<ClimaCiudad> favoritos = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
@@ -533,12 +596,19 @@ public class ServerImpl implements InterfazDeServer {
                         rs.getString("hora")
                     ));
                 }
+                if (favoritos.isEmpty()) {
+                    imprimirCuadro(cliente + " no tiene ciudades favoritas registradas.");
+                } else {
+                    imprimirCuadro("Se recuperaron " + favoritos.size() + " ciudades favoritas para " + cliente);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            imprimirCuadro("Error al recuperar favoritos desde la base de datos.");
         } finally {
             releaseMutex(clientName);
         }
+
         return favoritos;
     }
 
@@ -546,6 +616,10 @@ public class ServerImpl implements InterfazDeServer {
     public ArrayList<String> getNombresFavoritos(String cliente) throws RemoteException {
         String clientName = "Cliente " + cliente;
         if (!requestMutex(clientName)) throw new RemoteException("Zona crítica ocupada.");
+
+        System.out.println("\n================== Zona Crítica ==================");
+        System.out.printf("   %s está consultando los nombres de sus favoritos%n", clientName);
+        System.out.println("==================================================\n");
 
         ArrayList<String> nombres = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
@@ -556,14 +630,22 @@ public class ServerImpl implements InterfazDeServer {
                 while (rs.next()) {
                     nombres.add(rs.getString("ciudad"));
                 }
+                if (nombres.isEmpty()) {
+                    imprimirCuadro(cliente + " no tiene nombres de ciudades favoritas registrados.");
+                } else {
+                    imprimirCuadro(nombres.size() + " ciudades favoritas recuperadas para " + cliente);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            imprimirCuadro("Error al recuperar nombres de favoritos.");
         } finally {
             releaseMutex(clientName);
         }
+
         return nombres;
     }
+
 
     @Override
     public int heartbeat() throws RemoteException {

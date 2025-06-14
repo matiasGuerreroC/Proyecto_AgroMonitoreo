@@ -85,20 +85,20 @@ public class Client {
         stub.clienteDesconectado(nombreCliente);
     }
 
-    public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
-        return stub.getHistorial();
+    public ArrayList<ClimaCiudad> getHistorial(String nombreCliente) throws RemoteException {
+        return stub.getHistorial(nombreCliente);
     }
 
-    public ClimaCiudad consultarClima(String ciudad) throws RemoteException {
-        return stub.consultarClima(ciudad);
+    public ClimaCiudad consultarClima(String ciudad, String nombreCliente) throws RemoteException {
+        return stub.consultarClima(ciudad, nombreCliente);
     }
 
-    public ArrayList<String> generarAlertas(ClimaCiudad clima) throws RemoteException {
-        return stub.generarAlertas(clima);
+    public ArrayList<String> generarAlertas(ClimaCiudad clima, String nombreCliente) throws RemoteException {
+        return stub.generarAlertas(clima, nombreCliente);
     }
 
-    public ArrayList<String> obtenerHistorialAlertas(String ciudad) throws RemoteException {
-        return stub.obtenerHistorialAlertas(ciudad);
+    public ArrayList<String> obtenerHistorialAlertas(String ciudad, String nombreCliente) throws RemoteException {
+        return stub.obtenerHistorialAlertas(ciudad, nombreCliente);
     }
 
     public boolean agregarFavorito(String cliente, String ciudad) throws RemoteException {
