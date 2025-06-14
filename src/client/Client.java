@@ -37,7 +37,7 @@ public class Client {
                         System.exit(1);
                     }
                 } catch (InterruptedException e) {
-                    System.err.println("⛔ Heartbeat interrumpido: " + e.getMessage());
+                    System.err.println("Heartbeat interrumpido: " + e.getMessage());
                 }
             }
         }).start();
@@ -70,15 +70,19 @@ public class Client {
             Registry registry = LocateRegistry.getRegistry(host, port);
             return (InterfazDeServer) registry.lookup(nombre);
         } catch (Exception e) {
-            System.err.println("❌ Error conectando a " + nombre + ": " + e);
+            System.err.println("Error conectando a " + nombre + ": " + e);
             return null;
         }
     }
 
     // ---- Métodos de cliente que llaman al servidor ---- //
 
-    public void clienteConectado() throws RemoteException {
-        stub.clienteConectado();
+    public void clienteConectado(String nombreCliente) throws RemoteException {
+        stub.clienteConectado(nombreCliente);
+    }
+    
+    public void clienteDesconectado(String nombreCliente) throws RemoteException {
+        stub.clienteDesconectado(nombreCliente);
     }
 
     public ArrayList<ClimaCiudad> getHistorial() throws RemoteException {
