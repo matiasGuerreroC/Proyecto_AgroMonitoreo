@@ -7,7 +7,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.ArrayList;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,12 +28,19 @@ public class ServerImpl implements InterfazDeServer {
     
     public ServerImpl() throws RemoteException {
         ConectarBD();
-        UnicastRemoteObject.exportObject(this, 0);        
     }
     
-    public void clienteConectado() throws RemoteException {
+    @Override
+    public synchronized void clienteConectado(String nombreCliente) throws RemoteException {
         System.out.println("\n================== AgroMonitoreo ==================");
-        System.out.println("            El usuario ha iniciado sesión         ");
+        System.out.printf("         %s ha iniciado sesión%n", nombreCliente);
+        System.out.println("===================================================\n");
+    }
+    
+    @Override
+    public synchronized void clienteDesconectado(String nombreCliente) throws RemoteException {
+        System.out.println("\n================== AgroMonitoreo ==================");
+        System.out.printf("         %s se ha desconectado%n", nombreCliente);
         System.out.println("===================================================\n");
     }
 
