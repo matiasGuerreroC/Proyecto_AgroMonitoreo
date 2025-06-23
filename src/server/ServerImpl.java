@@ -543,25 +543,34 @@ public class ServerImpl implements InterfazDeServer {
         System.out.printf("   %s está eliminando '%s' de sus favoritos%n", nombreCliente, ciudad);
         System.out.println("==================================================\n");
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
-            String delete = "DELETE FROM favoritos WHERE cliente = ? AND ciudad = ?";
-            try (PreparedStatement ps = conn.prepareStatement(delete)) {
-                ps.setString(1, usuario);
-                ps.setString(2, ciudad);
-                boolean eliminado = ps.executeUpdate() > 0;
-                if (eliminado) {
-                    imprimirCuadro("Ciudad '" + ciudad + "' eliminada de favoritos de " + usuario);
-                } else {
-                    imprimirCuadro("No se encontró la ciudad '" + ciudad + "' en los favoritos de " + usuario);
+        // Simula retención de zona crítica por 15 segundos
+        try {
+            Thread.sleep(15000);
+
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/clima", "root", "")) {
+                String delete = "DELETE FROM favoritos WHERE cliente = ? AND ciudad = ?";
+                try (PreparedStatement ps = conn.prepareStatement(delete)) {
+                    ps.setString(1, usuario);
+                    ps.setString(2, ciudad);
+                    boolean eliminado = ps.executeUpdate() > 0;
+                    if (eliminado) {
+                        imprimirCuadro("Ciudad '" + ciudad + "' eliminada de favoritos de " + usuario);
+                    } else {
+                        imprimirCuadro("No se encontró la ciudad '" + ciudad + "' en los favoritos de " + usuario);
+                    }
+                    return eliminado;
                 }
-                return eliminado;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                imprimirCuadro("Error al eliminar favorito de la base de datos.");
+                return false;
+            } finally {
+                releaseMutex(nombreCliente);
             }
-        } catch (SQLException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
-            imprimirCuadro("Error al eliminar favorito de la base de datos.");
+            imprimirCuadro("Interrupción durante la simulación de zona crítica.");
             return false;
-        } finally {
-            releaseMutex(nombreCliente);
         }
     }
 
